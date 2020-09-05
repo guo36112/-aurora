@@ -14,7 +14,7 @@ spring:
     port: 6379
     timeout: 10000
     database: 0
-    password: MiyLUKbjG864X16U
+    password:
     lettuce:
       pool:
         max-active: 8
