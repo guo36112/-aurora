@@ -2,21 +2,21 @@ package com.example.orderserver.po;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
 @Data
 @ToString
-@TableName("products")
-public class ProductPo {
+@TableName("users")
+@Builder
+public class UserPo {
 
     @TableId
-    private Long productId;
+    private Long userId;
 
-    private String productName;
+    private String userName;
 
-    private String productPrice;
-
-    private Integer stockNumber;
+    private String shippingAddress;
 
 }

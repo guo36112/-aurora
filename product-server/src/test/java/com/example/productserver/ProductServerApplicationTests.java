@@ -45,6 +45,24 @@ class ProductServerApplicationTests {
 
 
     @Test
+    public void get() throws Exception {
+        MultiValueMap<String, String> paramMap = new LinkedMultiValueMap();
+        RequestBuilder request = MockMvcRequestBuilders
+                .get("/get/1")
+                .params(paramMap);
+        MvcResult mvcResult = mockMvc
+                .perform(request)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+        JSONObject jsonObject = JSONUtil.parseObj(content);
+        String code = jsonObject.getStr("code");
+        Assert.assertEquals("200",code);
+
+    }
+
+
+    @Test
     public void list() throws Exception {
         MultiValueMap<String, String> paramMap = new LinkedMultiValueMap();
         paramMap.add("pageNum","1");
@@ -63,22 +81,7 @@ class ProductServerApplicationTests {
 
     }
 
-    @Test
-    public void get() throws Exception {
-        MultiValueMap<String, String> paramMap = new LinkedMultiValueMap();
-        RequestBuilder request = MockMvcRequestBuilders
-                .get("/get/1")
-                .params(paramMap);
-        MvcResult mvcResult = mockMvc
-                .perform(request)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
-        JSONObject jsonObject = JSONUtil.parseObj(content);
-        String code = jsonObject.getStr("code");
-        Assert.assertEquals("200",code);
 
-    }
 
 
 

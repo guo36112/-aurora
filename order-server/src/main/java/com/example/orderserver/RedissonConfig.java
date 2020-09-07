@@ -15,10 +15,6 @@ public class RedissonConfig {
     @Value("${redisson.password}")
     private String password;
 
-    /**
-     *
-     * created by admin on 2020/07/25 21:02
-     */
     @Bean
     public RedissonClient getRedisson() {
         Config config = new Config();

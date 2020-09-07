@@ -1,21 +1,15 @@
 package com.example.orderserver.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
-import lombok.ToString;
 
-/**
- * @Program: ordSystem
- * @Description:
- * @Author: admin
- * @Create: 2020/09/02 16:57
- */
+
 @Data
-@ToString
-@TableName("order_info")
+@TableName("orders")
 @Builder
 public class OrderPo {
 
@@ -29,7 +23,7 @@ public class OrderPo {
     private String shippingAddress;
 
     private Long productId;
-
+    @TableField(exist = false)
     private String productName;
     //0:To be paid  1:Paid
     private Integer orderStatus;

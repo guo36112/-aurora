@@ -1,4 +1,4 @@
-package com.example.orderserver;
+package com.example.userserver;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -25,9 +25,9 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.Map;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = OrderServerApplication.class)
+@SpringBootTest(classes = UserServerApplication.class)
 @AutoConfigureMockMvc
-class OrderServerApplicationTests {
+class UserServerApplicationTests {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -39,12 +39,10 @@ class OrderServerApplicationTests {
 
 
     @Test
-    public void list() throws Exception {
+    public void get() throws Exception {
         MultiValueMap<String, String> paramMap = new LinkedMultiValueMap();
-        paramMap.add("pageNum","1");
-        paramMap.add("pageSize","20");
         RequestBuilder request = MockMvcRequestBuilders
-                .get("/list")
+                .get("/get/1")
                 .params(paramMap);
         MvcResult mvcResult = mockMvc
                 .perform(request)
@@ -57,15 +55,13 @@ class OrderServerApplicationTests {
 
     }
 
-
     @Test
-    public void add() throws Exception {
+    public void updateShippingAddress() throws Exception {
         Map<String, String> paramMap = Maps.newHashMap();
-        paramMap.put("productId","1");
-        paramMap.put("orderPrice","5.88");
-        paramMap.put("shippingAddress","hunan");
+        paramMap.put("userId","1");
+        paramMap.put("shippingAddress","fusan");
         RequestBuilder request = MockMvcRequestBuilders
-                .post("/add")
+                .post("/updateShippingAddress")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(JSONUtil.toJsonStr(paramMap));
@@ -79,6 +75,5 @@ class OrderServerApplicationTests {
         Assert.assertEquals("200",code);
 
     }
-
 
 }

@@ -1,4 +1,4 @@
-package com.example.productserver.po;
+package com.example.userserver.po;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -8,17 +8,15 @@ import lombok.ToString;
 
 @Data
 @ToString
-@TableName("products")
+@TableName("users")
 @Builder
-public class ProductPo {
+public class UserPo {
 
     @TableId
-    private Long productId;
+    private Long userId;
 
-    private String productName;
+    private String userName;
 
-    private String productPrice;
-
-    private Integer stockNumber;
+    private String shippingAddress;
 
 }

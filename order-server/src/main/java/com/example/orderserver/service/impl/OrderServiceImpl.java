@@ -1,8 +1,6 @@
 package com.example.orderserver.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.example.orderserver.common.CommonPage;
@@ -10,11 +8,14 @@ import com.example.orderserver.common.CommonReturnType;
 import com.example.orderserver.common.JException;
 import com.example.orderserver.dao.OrderDaoMapper;
 import com.example.orderserver.dto.AddOrderRequestDto;
-import com.example.orderserver.dto.UpdateProductByProductIdRequestDto;
+import com.example.orderserver.dto.ReduceInventoryByProductIdRequestDto;
+import com.example.orderserver.dto.UpdateShippingAddressRequestDto;
 import com.example.orderserver.po.OrderPo;
 import com.example.orderserver.po.ProductPo;
+import com.example.orderserver.po.UserPo;
 import com.example.orderserver.service.OrderService;
 import com.example.orderserver.service.ProductApi;
+import com.example.orderserver.service.UserApi;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +30,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @Program: ordSystem
- * @Description:
- * @Author: admin
- * @Create: 2020/09/02 17:09
- */
 @Service
 @Slf4j
 public class OrderServiceImpl implements OrderService {
@@ -45,6 +40,8 @@ public class OrderServiceImpl implements OrderService {
     private OrderDaoMapper orderDaoMapper;
     @Resource
     private ProductApi productApi;
+    @Resource
+    private UserApi userApi;
 
 
     @Override
@@ -53,6 +50,23 @@ public class OrderServiceImpl implements OrderService {
         queryWrapper.lambda().eq(OrderPo::getUserId, 1);
         PageHelper.startPage(pageNum,pageSize);
         List<OrderPo> orderList = orderDaoMapper.selectList(queryWrapper);
+        for(int i =0;i<orderList.size();i++){
+            OrderPo orderPo = orderList.get(i);
+
+            CommonReturnType<ProductPo> getProductResult = productApi.get(orderPo.getProductId());
+            String getProductCode = getProductResult.getCode();
+            if(StringUtils.isBlank(getProductCode)|| !"200".equals(getProductCode)){
+                log.error("Service call failed");
+                continue;
+            }
+            ProductPo productPo = getProductResult.getData();
+            if(ObjectUtils.isEmpty(productPo) ){
+                log.error("Products that don't exist");
+                continue;
+            }
+            orderPo.setProductName(productPo.getProductName());
+            orderList.set(i, orderPo);
+        }
 
         return CommonReturnType.creat(CommonPage.restPage(orderList));
     }
@@ -64,7 +78,15 @@ public class OrderServiceImpl implements OrderService {
         Long productId = reqDto.getProductId();
         String shippingAddress = reqDto.getShippingAddress();
         //Get current user information
-        Long userId= 1L;
+        CommonReturnType<UserPo> getUserResult = userApi.get(1L);
+        String getUserCode = getUserResult.getCode();
+        if(StringUtils.isBlank(getUserCode)|| !"200".equals(getUserCode)){
+            return CommonReturnType.creat(null,"500","Service call failed");
+        }
+        UserPo userPo = getUserResult.getData();
+        if(ObjectUtils.isEmpty(userPo) ){
+            return CommonReturnType.creat(null,"500","Products that don't exist");
+        }
 
 
         /** 1 Get lock */
@@ -84,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
             if(ObjectUtils.isEmpty(productPo) ){
                 return CommonReturnType.creat(null,"500","Products that don't exist");
             }
-            if(productPo.getSurplusStock()==0 ){
+            if(productPo.getStockNumber()==0 ){
                 return CommonReturnType.creat(null,"500","The product is not in stock");
             }
             if(new BigDecimal(productPo.getProductPrice()).compareTo(new BigDecimal(orderPrice))!=0){
@@ -92,9 +114,9 @@ public class OrderServiceImpl implements OrderService {
             }
 
             /** 3 Product inventory minus one */
-            UpdateProductByProductIdRequestDto updateProductByProductIdRequestDto = new UpdateProductByProductIdRequestDto();
+            ReduceInventoryByProductIdRequestDto updateProductByProductIdRequestDto = new ReduceInventoryByProductIdRequestDto();
             updateProductByProductIdRequestDto.setProductId(productPo.getProductId());
-            CommonReturnType updateProductResult = productApi.updateProductByProductId(updateProductByProductIdRequestDto);
+            CommonReturnType updateProductResult = productApi.reduceInventoryByProductId(updateProductByProductIdRequestDto);
             String updateProductCode = updateProductResult.getCode();
             if(StringUtils.isBlank(updateProductCode)|| !"200".equals(updateProductCode)){
                 return CommonReturnType.creat(null,"500","Service call failed");
@@ -103,10 +125,9 @@ public class OrderServiceImpl implements OrderService {
             int insertNumber = orderDaoMapper.insert(OrderPo.builder()
                     .orderId(orderId)
                     .orderPrice(orderPrice)
-                    .userId(userId)
+                    .userId(userPo.getUserId())
                     .shippingAddress(shippingAddress)
                     .productId(productPo.getProductId())
-                    .productName(productPo.getProductName())
                     .orderStatus(0)
                     .build());
             if(insertNumber==0){
@@ -117,6 +138,19 @@ public class OrderServiceImpl implements OrderService {
             throw new JException("500", ex.getMessage());
         } finally {
             lock.unlock();
+        }
+
+
+
+        if(!userPo.getShippingAddress().equals(shippingAddress)){
+            CommonReturnType<UserPo> updateUserResult = userApi.updateShippingAddress(UpdateShippingAddressRequestDto.builder()
+                    .userId(userPo.getUserId())
+                    .shippingAddress(shippingAddress)
+                    .build());
+            String getProductCode = updateUserResult.getCode();
+            if(StringUtils.isBlank(getProductCode)|| !"200".equals(getProductCode)){
+                log.error("Service call failed");
+            }
         }
 
 

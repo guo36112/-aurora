@@ -1,11 +1,9 @@
 package com.example.productserver.controller;
 
-import com.example.productserver.common.CommonPage;
 import com.example.productserver.common.CommonReturnType;
-import com.example.productserver.dto.UpdateProductByProductIdRequestDto;
+import com.example.productserver.dto.ReduceInventoryByProductIdRequestDto;
 import com.example.productserver.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,9 +24,9 @@ public class ProductController {
         return productService.get(productId);
     }
 
-    @PostMapping("/updateProductByProductId")
-    public CommonReturnType updateProductByProductId(@RequestBody UpdateProductByProductIdRequestDto reqDto) {
-        return productService.updateProductByProductId(reqDto);
+    @PostMapping("/reduceInventoryByProductId")
+    public CommonReturnType reduceInventoryByProductId(@RequestBody ReduceInventoryByProductIdRequestDto reqDto) {
+        return productService.reduceInventoryByProductId(reqDto);
     }
 
 

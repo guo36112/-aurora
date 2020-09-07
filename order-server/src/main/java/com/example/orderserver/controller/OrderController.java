@@ -1,6 +1,5 @@
 package com.example.orderserver.controller;
 
-import com.example.orderserver.common.CommonPage;
 import com.example.orderserver.common.CommonReturnType;
 import com.example.orderserver.dto.AddOrderRequestDto;
 import com.example.orderserver.service.OrderService;
@@ -15,13 +14,9 @@ public class OrderController {
 
 
 
-    /**
-     *
-     * created by admin on 2020/09/02 17:04
-     */
     @GetMapping("/list")
     public CommonReturnType list(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                           @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
+                                 @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
         return orderService.list(pageNum,pageSize);
     }
 
